@@ -1,0 +1,12 @@
+{
+  "name": "mp3toaiff",
+  "version": "1.0.0",
+  "description": "YouTube to mp3 converter with ability to convert to aiff. ",
+  "main": "ytmp3.js",
+  "author": "Christian Moronta",
+  "license": "MIT",
+  "dependencies": {
+    "fluent-ffmpeg": "^2.1.2",
+    "ytdl-core": "^4.11.0"
+  }
+}
