@@ -43,10 +43,20 @@ if (ytdl.validateID(args[0]) || ytdl.validateURL(args[0])) {
             console.log(`Saving to file path: ${filePath}`);
 
             // Downloading mp3 stream here
-            downloadAudio(stream)
-                .then(() => {
+            downloadAudio(stream, filePath)
+                .then((filePath) => {
+                    // If user wants to convert to aiff remove the mp3 file as well
                     if (args[1] === '--aiff' || args[1] === '-a') {
-                        convertToAif(filePath)
+                        convertToAif(filePath).then(() => {
+                            fs.unlink(filePath, (err) => {
+                                if (err) {
+                                    throw err
+                                } else {
+                                    console.log('mp3 file removed.')
+                                }
+                            })
+                        })
+
                     }
                 }).catch(err => {
                     console.log('err: ' + err.code, err.message)
@@ -57,7 +67,7 @@ if (ytdl.validateID(args[0]) || ytdl.validateURL(args[0])) {
     process.exitCode = 1;
 }
 
-const downloadAudio = (stream) => new Promise((resolve, reject) => {
+const downloadAudio = (stream, filePath) => new Promise((resolve, reject) => {
     let start = Date.now();
     ffmpeg(stream)
         .audioBitrate(320)
@@ -68,14 +78,14 @@ const downloadAudio = (stream) => new Promise((resolve, reject) => {
         })
         .on("end", () => {
             console.log(`\ndone, thanks - ${(Date.now() - start) / 1000}s`);
-            resolve()
+            resolve(filePath)
         })
         .on("err", (err) => {
             reject(err)
         })
 })
 
-const convertToAif = (filePath) => {
+const convertToAif = (filePath) => new Promise((resolve, reject) => {
     const outputFile = filePath.replace(".mp3", ".aiff")
     ffmpeg({
         source: filePath
@@ -84,7 +94,8 @@ const convertToAif = (filePath) => {
         process.stdout.write('Converting to .aiff format...');
     }).on("end", () => {
         console.log(`Done. New file saved at ${outputFile}`)
+        resolve()
     }).on("error", (err) => {
-        console.error(err)
+        reject(err)
     })
-}
+})
