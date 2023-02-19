@@ -8,27 +8,35 @@ Download the code and run:
 
 ```bash
 npm install -g
+yarn global add file:$PWD
 ```
-
 
 ## Usage
 
 To download a YouTube Link to your Downloads folder:
+
 ```bash
-ytmp3 "URL" 
+ytmp3 "<YouTube Link>"
 ```
+
 To download with a video ID:
+
 ```bash
-ytmp3.js ID
+ytmp3.js "<YouTube ID>"
 ```
 
 To download and convert a link:
-```bash
-ytmp3 "[Youtube Link]" or ID -a
-```
 
 ```bash
-ytmp3 "[Youtube Link]" of ID --aiff
+ytmp3 "<YouTube ID | YouTube Link>" -a --aiff
 ```
+
+To download and split into stems using demucs
+
+```bash
+ytmp3 "<YouTube ID | YouTube Link>" -s --split
+```
+
 ## License
+
 [MIT](https://choosealicense.com/licenses/mit/)

@@ -6,101 +6,75 @@
 
 const readline = require("readline");
 const ytdl = require("ytdl-core");
-const ffmpeg = require("fluent-ffmpeg");
-const os = require("os");
-const fs = require("fs");
+const { PythonShell } = require("python-shell");
+const { convertToAiff, downloadAudio, splitFile } = require("./utils");
+const yargs = require("yargs");
+const homeDir = require("os").homedir();
+const usage = 'Usage: $0 "<link>" [options]';
 
-const homeDir = os.homedir();
+const argv = yargs
+  .scriptName("ytmp3")
+  .version("1.1")
+  .usage(usage)
+  .positional("_", {
+    describe: "YouTube link",
+    type: "string",
+    coerce: (link) => {
+      if (link.length === 0) throw new Error("Link is required");
+      let linkItem = link[0];
+      if (ytdl.validateID(linkItem) || ytdl.validateURL(linkItem)) {
+        return link;
+      } else {
+        throw new Error(`Error: Invalid YouTube link`);
+      }
+    },
+  })
+  .option("aiff", {
+    alias: "a",
+    describe: "Convert file to .aiff format",
+  })
+  .option("split", {
+    alias: "s",
+    describe:
+      "Split song into its components stems using demucs (drums, bass, vocals, other) and download to current directory",
+  })
+  .help("h")
+  .alias("h", "help").argv;
 
-// process.argv returns [env, filepath, ...] so need to slice first two off
-const args = process.argv.slice(2);
+const link = argv._[0];
+let filePath = "";
+let title = "";
 
-// Usage prompt
-if (args.length < 1) {
-  console.log('Usage: ./ytmp3.js "[Youtube Link]" --option option1Arg');
-  process.exitCode = 1;
-} else {
-  let link = args[0];
-  let title = "";
+const { aiff, split } = argv;
+ytdl
+  .getInfo(link) // Get video info and set title variable
+  .then((info) => {
+    title = info.videoDetails.title;
+  })
+  .then(() => {
+    let stream = ytdl(link, {
+      quality: "highestaudio",
+    });
 
-  let filePath = "";
-  // If valid URL or ID (watch?="ID") process request
-  if (ytdl.validateID(args[0]) || ytdl.validateURL(args[0])) {
-    ytdl
-      .getInfo(args[0]) // Get video info and set title variable
-      .then((info) => {
-        title = info.videoDetails.title;
-      })
-      .then(() => {
-        let stream = ytdl(link, {
-          quality: "highestaudio",
-        });
+    filePath = `${homeDir}/Downloads/${title}.mp3`;
 
-        filePath = `${homeDir}/Downloads/${title}.mp3`;
+    console.log(`Saving to file path: ${filePath}`);
 
-        console.log(`Saving to file path: ${filePath}`);
-
-        // Downloading mp3 stream here
-        downloadAudio(stream, filePath)
-          .then((filePath) => {
-            // If user wants to convert to aiff remove the mp3 file as well
-            if (args[1] === "--aiff" || args[1] === "-a") {
-              convertToAif(filePath).then(() => {
-                fs.unlink(filePath, (err) => {
-                  if (err) {
-                    throw err;
-                  } else {
-                    console.log("mp3 file removed.");
-                  }
-                });
-              });
-            }
-          })
-          .catch((err) => {
-            console.log("err: " + err.code, err.message);
+    // Downloading mp3 stream here
+    downloadAudio(stream, filePath)
+      .then((filePath) => {
+        // Options
+        if (aiff && split) {
+          convertToAiff(filePath).then((file) => {
+            splitFile(file);
           });
-      });
-  } else {
-    console.log("Invalid or empty YouTube URL"); // If neither a valid URL/ID then err
-    process.exitCode = 1;
-  }
-}
-
-const downloadAudio = (stream, filePath) =>
-  new Promise((resolve, reject) => {
-    let start = Date.now();
-    ffmpeg(stream)
-      .audioBitrate(320)
-      .save(filePath)
-      .on("progress", (p) => {
-        readline.cursorTo(process.stdout, 0);
-        process.stdout.write(`${p.targetSize}kb downloaded`);
+        } else if (aiff) {
+          convertToAiff(filePath);
+        } else if (split) {
+          splitFile(filePath);
+        }
       })
-      .on("end", () => {
-        console.log(`\ndone, thanks - ${(Date.now() - start) / 1000}s`);
-        resolve(filePath);
-      })
-      .on("err", (err) => {
-        reject(err);
-      });
-  });
-
-const convertToAif = (filePath) =>
-  new Promise((resolve, reject) => {
-    const outputFile = filePath.replace(".mp3", ".aiff");
-    ffmpeg({
-      source: filePath,
-    })
-      .save(outputFile)
-      .on("progress", () => {
-        readline.cursorTo(process.stdout, 0);
-        process.stdout.write("Converting to .aiff format...");
-      })
-      .on("end", () => {
-        console.log(`Done. New file saved at ${outputFile}`);
-        resolve();
-      })
-      .on("error", (err) => {
-        reject(err);
+      .catch((err) => {
+        console.log("Error: ", err.message);
       });
   });
