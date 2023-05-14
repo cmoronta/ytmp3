@@ -1,17 +1,17 @@
 {
-  "name": "ytmp3",
-  "version": "1.0.0",
-  "description": "YouTube to mp3 converter with ability to convert to aiff. ",
-  "main": "bin/ytmp3.js",
-  "bin": {
-    "ytmp3": "./bin/ytmp3.js"
-  },
-  "author": "Christian Moronta",
-  "license": "MIT",
-  "dependencies": {
-    "fluent-ffmpeg": "^2.1.2",
-    "python-shell": "^5.0.0",
-    "yargs": "^17.6.2",
-    "ytdl-core": "^4.11.2"
-  }
+	"name": "ytmp3",
+	"version": "1.2",
+	"description": "YouTube to mp3 converter with ability to convert to aiff. ",
+	"main": "bin/ytmp3.js",
+	"bin": {
+		"ytmp3": "./bin/ytmp3.js"
+	},
+	"author": "Christian Moronta",
+	"license": "MIT",
+	"dependencies": {
+		"fluent-ffmpeg": "^2.1.2",
+		"python-shell": "^5.0.0",
+		"yargs": "^17.6.2",
+		"ytdl-core": "^4.11.4"
+	}
 }
