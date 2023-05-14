@@ -1,6 +1,6 @@
 {
 	"name": "ytmp3",
-	"version": "1.2",
+	"version": "1.0.2",
 	"description": "YouTube to mp3 converter with ability to convert to aiff. ",
 	"main": "bin/ytmp3.js",
 	"bin": {
