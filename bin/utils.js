@@ -18,10 +18,16 @@ module.exports.convertToAiff = (filePath, args) =>
 		});
 	});
 
-module.exports.splitFile = (file) => {
+module.exports.splitFile = (file, outputFolder) => {
 	new Promise((resolve, reject) => {
 		console.log("Splitting file...\nThis might take a while...☕");
-		const pythonProcess = spawn("python3", ["-m", "demucs", file]);
+		const pythonProcess = spawn("python3", [
+			"-m",
+			"demucs",
+			file,
+			"--out",
+			outputFolder,
+		]);
 		pythonProcess.stdout.on("data", (data) => {
 			console.log(data.toString());
 		});

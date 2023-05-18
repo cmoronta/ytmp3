@@ -37,12 +37,12 @@ ytdl
 				// Options
 				if (aiff && split) {
 					convertToAiff(filePath).then((file) => {
-						splitFile(file);
+						splitFile(file, output);
 					});
 				} else if (aiff) {
 					convertToAiff(filePath);
 				} else if (split) {
-					splitFile(filePath);
+					splitFile(filePath, output);
 				}
 			})
 			.catch((err) => {
